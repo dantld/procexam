@@ -1,0 +1,5 @@
+SPOOL deinstall.log
+DROP TABLE DEPT;
+DROP TABLE EMP;
+SPOOL OFF;
+exit;

@@ -1,0 +1,53 @@
+	This document guide to install and use Oracle
+InstantClient product for works with this educational project.
+
+Two version of Oracle InstantClient software
+was tested with project:
+	11.2 64 bit
+	12.2 64 bit
+
+Three archives or RPM (what ever) need to install
+on target machine (example for 12.2 version):
+    instantclient-basic-linux.x64-12.2.0.1.0.zip (or instantclient-basiclite-linux.x64-12.2.0.1.0.zip)
+    instantclient-precomp-linux.x64-12.2.0.1.0.zip
+    instantclient-sdk-linux.x64-12.2.0.1.0.zip
+
+This archves available on www.oracle.com.
+
+Just extract this files on your home dir for example
+or if you an admin then you can extract to more public
+available place /usr/local or /usr/.
+
+If you can install RPM on your system so InstantClient
+will be setup to /usr.
+
+For developer works I`d prefer just extract zip archives
+because you can test with diffenrent versions fo InstantClient.
+If you use rpm you will shall operate only single version. It
+good for production machines not for developer one.
+
+After install lookup variable ICDIRNAME in Makefile.project and
+edit as required also please check variables ICVERMAJ and ICVERMIN.
+
+Now you need to know where your Oracle database were resided. It
+can be local on your developer machine or on standalone server.
+
+In any case you need IP address and port, oracle SID name. If you
+have machine with Oracle client (or possible Oracle database) installed
+you may has environment variable ORACLE_HOME which can show you where
+Oracle product was installed. Lookup in file with name 
+${ORACLE_HOME}/network/admin/tnsnames.ora and find out the TNS name
+of your target Oracle instance.
+Also you need user name and password. User must have capable to connect.
+See connection information related variables in Makefile.project:
+ORAUSR=PROCEXAM
+ORAPWD=PROCEXAM
+ORATNS=ORCL
+
+In main Makefile you will find special targets which take care about 
+user and tables creation and population test data.
+    sql-adduser - Create test user PROCEXAM (Need DBA access! Script ask for creadetials!)
+    sql-deluser - Drop test user PROCEXAM (Need DBA access! Script ask for creadetials!)
+    sql-install - Create tables and populate data in them.
+    sql-drop    - Drop tables
+

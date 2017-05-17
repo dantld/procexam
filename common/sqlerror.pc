@@ -1,0 +1,29 @@
+/*
+ */
+
+#include <stdio.h>
+#include <string.h>
+#include <sqlca.h>
+#include <sqlda.h>
+#include <sqlcpr.h>
+#include <stdlib.h>
+
+#include <procexam.h>
+
+void sql_error(
+		    char *msg )
+{
+    char err_msg[512];
+    size_t buf_len, msg_len;
+
+    EXEC SQL WHENEVER SQLERROR CONTINUE;
+
+    printf("\n%s\n", msg);
+
+    buf_len = sizeof (err_msg);
+    sqlglm(err_msg, &buf_len, &msg_len);
+    printf("%.*s\n", msg_len, err_msg);
+
+    EXEC SQL ROLLBACK RELEASE;
+    exit(EXIT_FAILURE);
+}
