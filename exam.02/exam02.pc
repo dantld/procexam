@@ -1,0 +1,90 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+
+#include <sqlca.h>
+#include <sqlda.h>
+#include <sqlcpr.h>
+
+#include <procexam.h>
+
+// We employ this buffer for creating
+// the connection string
+char connectString[MAX_CONNECT_STRING];
+
+struct {
+    VARCHAR  emp_name[32];
+    float salary;
+    float commission;
+} emprec;
+
+struct
+{
+    short emp_name_ind;
+    short sal_ind;
+    short comm_ind;
+} emprec_ind;
+
+int emp_number;
+int total_queried;
+
+int main( int argc, char *argv[] )
+{
+    assert(
+	MAX_CONNECT_STRING >= snprintf( 
+	    connectString,
+	    MAX_CONNECT_STRING,
+	    "%s/%s@%s",
+	    ORAUSR,
+	    ORAPWD,
+	    ORATNS ));
+
+    EXEC SQL WHENEVER SQLERROR DO sql_error("ORACLE error--");
+
+    EXEC SQL CONNECT :connectString;
+
+    int emp_number;
+    int total_queried = 0;
+    char temp_char[16];
+
+    for (;;)
+    {
+    /* Break out of the inner loop when a
+     * 1403 ("No data found") condition occurs.
+     */
+	EXEC SQL WHENEVER NOT FOUND DO break;
+	for (;;)
+	{
+	    emp_number = 0;
+	    printf("\nEnter employee number (empty string to quit): ");
+	    if( fgets( temp_char, 16, stdin ) == NULL )
+		break;
+	    emp_number = atoi(temp_char);
+	    if( emp_number == 0 )
+		break;
+
+	    EXEC SQL SELECT ename, sal, comm
+		INTO :emprec INDICATOR :emprec_ind
+		FROM EMP
+		WHERE EMPNO = :emp_number;
+
+	    printf("\n\nEmployee\tSalary\t\tCommission\n");
+	    printf("--------\t------\t\t----------\n");
+	    emprec.emp_name.arr[emprec.emp_name.len] = '\0';
+	    printf("%-8s\t%6.2f\t\t",
+	    emprec.emp_name.arr, emprec.salary);
+	    if (emprec_ind.comm_ind == -1)
+		printf("NULL\n");
+	    else
+		printf("%6.2f\n", emprec.commission);
+	    total_queried++;
+	} /* end inner for (;;) */
+	if( emp_number == 0 )
+	    break;
+	printf("\nNot a valid employee number - try again.\n");
+    } /* end outer for(;;) */
+    printf("\n\nTotal rows returned was %d.\n", total_queried);
+
+    EXEC SQL COMMIT WORK RELEASE;
+    return 0;
+}
